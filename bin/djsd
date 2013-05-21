@@ -1,13 +1,14 @@
 #!/usr/bin/env ruby
+# encoding: utf-8
 
 if (%w( -h --help -help help ) & ARGV).length > 0
-  puts "usage: djsd [-hv]"
-  puts "starts dotjs server in the foreground. kill with ^C"
+  puts 'usage: djsd [-hv]'
+  puts 'starts dotjs server in the foreground. kill with ^C'
   exit
 end
 
 if ARGV.include?('-v')
-  puts "djsd 2.0"
+  puts 'djsd 2.0'
   exit
 end
 
@@ -19,28 +20,27 @@ dotjs = Class.new(WEBrick::HTTPServlet::AbstractServlet) do
     body = build_body(request.path)
 
     response.status = body.empty? ? 204 : 200
+
     if origin = detect_origin(request)
       response['Access-Control-Allow-Origin'] = origin
     end
+
     response['Content-Type'] = 'text/javascript'
     response.body = body
   end
 
   def build_body(path)
-    files = [File.expand_path("default.js")]
-    paths = path.gsub('/','').split('.')
+    files = [File.expand_path('default.js')]
+    paths = path.gsub('/', '').split('.')
 
     until paths.empty?
-      file = File.expand_path(paths.join('.'))
-      files << file if File.file?(file)
+      files << File.expand_path(paths.join('.'))
       paths.shift
     end
 
     body = "// dotjs is working! //\n"
 
-    files.each do |file|
-      body << File.read(file) + "\n" if File.file?(file)
-    end
+    files.each { |f| body << File.read(f) + "\n" if File.file?(f) }
 
     body
   end
@@ -48,7 +48,7 @@ dotjs = Class.new(WEBrick::HTTPServlet::AbstractServlet) do
   def detect_origin(req)
     path   = req.path
     origin = req.header['origin']
-    search = path.gsub('/','').gsub(/\.js$/,'') + '$'
+    search = path.gsub('/', '').gsub(/\.js$/, '') + '$'
 
     if origin.length == 1 && path.length != 1 && origin[0].match(search)
       origin[0]
@@ -61,14 +61,14 @@ ssl_cert = ssl_info.scan(/(-----BEGIN CERTIFICATE-----.+?-----END CERTIFICATE---
 ssl_key  = ssl_info.scan(/(-----BEGIN RSA PRIVATE KEY-----.+?-----END RSA PRIVATE KEY-----)/m)[0][0]
 
 server_options = {
-  :BindAddress => "127.0.0.1",
+  :BindAddress => '127.0.0.1',
   :Port => 3131,
   :AccessLog => [],
   :SSLEnable => true,
   :SSLVerifyClient => OpenSSL::SSL::VERIFY_NONE,
   :SSLPrivateKey => OpenSSL::PKey::RSA.new(ssl_key),
   :SSLCertificate => OpenSSL::X509::Certificate.new(ssl_cert),
-  :SSLCertName => [["CN", WEBrick::Utils::getservername]],
+  :SSLCertName => [['CN', WEBrick::Utils::getservername]],
 }
 
 server = WEBrick::HTTPServer.new(server_options)

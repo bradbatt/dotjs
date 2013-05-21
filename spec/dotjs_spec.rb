@@ -16,10 +16,17 @@ describe '.js' do
       expect(res.headers['content-type']).to eql 'text/javascript'
     end
 
+    it 'includes the default script in the response' do
+      res = HTTParty.get("#{base_uri}/github.com.js")
+
+      expect(res.body).to include read_fixture('js')
+    end
+
     it 'responds with scripts for the requested domain' do
       res = HTTParty.get("#{base_uri}/github.com.js")
 
       expect(res.body).to include read_fixture('github.com.js')
+      expect(res.body).to_not include read_fixture('pages.github.com.js')
     end
 
     it 'responds with scripts for all requested subdomains' do
@@ -35,6 +42,12 @@ describe '.js' do
       res = HTTParty.get("#{base_uri}/github.com.css")
 
       expect(res.headers['content-type']).to eql 'text/css'
+    end
+
+    it 'includes the default stylesheet in the response' do
+      res = HTTParty.get("#{base_uri}/github.com.css")
+
+      expect(res.body).to include read_fixture('css')
     end
 
     it 'responds with stylesheets for the requested domain' do

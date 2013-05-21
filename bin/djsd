@@ -9,7 +9,7 @@ port = 3131
 options = OptionParser.new do |opts|
   opts.banner = 'Usage: djsd [-d SERVE_DIR] [-p PORT]'
 
-  opts.on '-v', '--version'do
+  opts.on '-v', '--version' do
     puts 'djsd 2.0'
     exit
   end
@@ -38,12 +38,17 @@ dotjs = Class.new(WEBrick::HTTPServlet::AbstractServlet) do
       response['Access-Control-Allow-Origin'] = origin
     end
 
-    response['Content-Type'] = 'text/javascript'
+    response['Content-Type'] = if request.path.end_with?('.css')
+      'text/css'
+    else
+      'text/javascript'
+    end
+
     response.body = body
   end
 
   def build_body(path)
-    files = [File.expand_path('default.js')]
+    files = []
     paths = path.gsub('/', '').split('.')
 
     until paths.empty?
@@ -51,7 +56,7 @@ dotjs = Class.new(WEBrick::HTTPServlet::AbstractServlet) do
       paths.shift
     end
 
-    body = "// dotjs is working! //\n"
+    body = "/* dotjs is working! */\n"
 
     files.each { |f| body << File.read(f) + "\n" if File.file?(f) }
 
@@ -61,7 +66,7 @@ dotjs = Class.new(WEBrick::HTTPServlet::AbstractServlet) do
   def detect_origin(req)
     path   = req.path
     origin = req.header['origin']
-    search = path.gsub('/', '').gsub(/\.js$/, '') + '$'
+    search = path.gsub('/', '').gsub(/\.(j|cs)s$/, '') + '$'
 
     if origin.length == 1 && path.length != 1 && origin[0].match(search)
       origin[0]

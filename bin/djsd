@@ -1,16 +1,29 @@
 #!/usr/bin/env ruby
 # encoding: utf-8
 
-if (%w( -h --help -help help ) & ARGV).length > 0
-  puts 'usage: djsd [-hv]'
-  puts 'starts dotjs server in the foreground. kill with ^C'
-  exit
+require 'optparse'
+require 'fileutils'
+
+port = 3131
+
+options = OptionParser.new do |opts|
+  opts.banner = 'Usage: djsd [-d SERVE_DIR] [-p PORT]'
+
+  opts.on '-v', '--version'do
+    puts 'djsd 2.0'
+    exit
+  end
+
+  opts.on '-d DIR', '--dir DIR' do |d|
+    FileUtils.cd(d)
+  end
+
+  opts.on '-p PORT', '--port PORT' do |p|
+    port = p.to_i if p && p.to_i
+  end
 end
 
-if ARGV.include?('-v')
-  puts 'djsd 2.0'
-  exit
-end
+options.parse!
 
 require 'webrick'
 require 'webrick/https'
@@ -62,7 +75,7 @@ ssl_key  = ssl_info.scan(/(-----BEGIN RSA PRIVATE KEY-----.+?-----END RSA PRIVAT
 
 server_options = {
   :BindAddress => '127.0.0.1',
-  :Port => 3131,
+  :Port => port,
   :AccessLog => [],
   :SSLEnable => true,
   :SSLVerifyClient => OpenSSL::SSL::VERIFY_NONE,

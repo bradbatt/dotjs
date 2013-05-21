@@ -141,3 +141,7 @@ task :install_dir_writeable do
     abort "Error: Can't write to #{DAEMON_INSTALL_DIR}. Try again using `sudo`."
   end
 end
+
+require 'rspec/core/rake_task'
+
+RSpec::Core::RakeTask.new
